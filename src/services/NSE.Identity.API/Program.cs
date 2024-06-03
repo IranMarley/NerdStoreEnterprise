@@ -1,15 +1,34 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using NSE.Identity.API.Data;
+using NSE.Identity.API.Configurations;
 
-var builder = WebApplication.CreateBuilder(args);
+public class Program
+{
+    private static WebApplicationBuilder _builder;
+    private static WebApplication _app;
+    
+    public static void Main(string[] args)
+    {
+        _builder = WebApplication.CreateBuilder(args);
 
-var configuration = builder.Configuration;
+        ConfigureServices();
 
-builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        _app = _builder.Build();
 
-var app = builder.Build();
+        ConfigureRequestsPipeline();
 
-app.Run();
+        _app.Run();
+    }
+    
+    private static void ConfigureServices()
+    {
+        _builder.AddIdentityConfiguration();
+        _builder.AddJwtConfiguration();
+        _builder.AddApiConfiguration();
+        _builder.AddSwaggerConfiguration();
+    }
+    
+    private static void ConfigureRequestsPipeline()
+    {
+        _app.UseApiConfiguration();
+        _app.UseSwaggerConfiguration();
+    }
+}
